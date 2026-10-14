@@ -1,0 +1,23 @@
+workflows:
+  budget-vs-gastos-apk:
+    name: Budget vs Gastos APK
+    instance_type: mac_mini_m1
+    max_build_duration: 60
+    environment:
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Get Flutter packages
+        script: |
+          flutter clean
+          flutter pub get
+      - name: Build APK with Flutter
+        script: |
+          flutter build apk --release --no-tree-shake-icons
+    artifacts:
+      - build/app/outputs/flutter-apk/*.apk
+    publishing:
+      email:
+        recipients:
+          - meanyu55gastosko@gmail.com
