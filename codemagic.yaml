@@ -15,16 +15,16 @@ workflows:
           printf "distributionBase=GRADLE_USER_HOME\ndistributionPath=wrapper/dists\nzipStoreBase=GRADLE_USER_HOME\nzipStorePath=wrapper/dists\ndistributionUrl=https\\\\://services.gradle.org/distributions/gradle-8.12-all.zip\nnetworkTimeout=10000\nvalidateDistributionUrl=true\n" > android/gradle/wrapper/gradle-wrapper.properties
           printf "org.gradle.jvmargs=-Xmx4G\nandroid.useAndroidX=true\nandroid.enableJetifier=true\nandroid.newDsl=false\n" > android/gradle.properties
           printf "pluginManagement {\n val flutterSdkPath = {\n val properties = java.util.Properties()\n file(\"local.properties\").inputStream().use { properties.load(it) }\n val flutterSdkPath = properties.getProperty(\"flutter.sdk\")\n require(flutterSdkPath != null) { \"flutter.sdk not set\" }\n flutterSdkPath\n }()\n includeBuild(\"\$flutterSdkPath/packages/flutter_tools/gradle\")\n repositories {\n google()\n mavenCentral()\n gradlePluginPortal()\n }\n}\nplugins {\n id(\"dev.flutter.flutter-plugin-loader\") version \"1.0.0\"\n id(\"com.android.application\") version \"8.7.3\" apply false\n id(\"org.jetbrains.kotlin.android\") version \"2.1.0\" apply false\n}\ninclude(\":app\")\n" > android/settings.gradle.kts
+          echo "FIX APPLIED - Checking files:"
           cat android/gradle/wrapper/gradle-wrapper.properties
           cat android/gradle.properties
           cat android/settings.gradle.kts
-          ls -la android/
       - name: Get Flutter packages
         script: |
           flutter clean
           flutter pub get
       - name: Build APK with Flutter
         script: |
-          flutter build apk --release --no-tree-shake-icons -- -Pandroid.newDsl=false
+          flutter build apk --release --no-tree-shake-icons
     artifacts:
       - build/app/outputs/flutter-apk/*.apk
