@@ -4,74 +4,26 @@ workflows:
     instance_type: mac_mini_m1
     max_build_duration: 60
     environment:
-      flutter: stable
+      flutter: 3.32.8
       xcode: latest
       cocoapods: default
     scripts:
-      - name: FIX - Regenerate Android and Restore Code + Icon + Name
+      - name: Restore App + Set Name + Icon
         script: |
-          echo "=== BACKUP LIB CODE ==="
-          ls -la lib/
-          cat lib/main.dart | head -20
-          echo "=== RESTORE ASSETS AND PUBSPEC ==="
-          git checkout HEAD -- assets/ pubspec.yaml 2>/dev/null || git checkout main -- assets/ pubspec.yaml || true
-          ls -lh assets/icon.png
-          echo "=== DELETING OLD ANDROID ==="
-          rm -rf android
-          rm -rf ~/.gradle/wrapper/dists/
-          echo "=== GENERATING NEW ANDROID ==="
-          flutter create --platforms=android --org com.gastosko.app --project-name budget_vs_gastosv1 .
-          echo "=== RESTORING YOUR BUDGET APP FROM GIT ==="
-          git checkout HEAD -- lib/ pubspec.yaml || git restore --source=HEAD lib/ pubspec.yaml || true
+          echo "=== RESTORE YOUR BUDGET CODE ==="
+          git checkout main -- lib/ assets/ pubspec.yaml 2>/dev/null || git checkout HEAD -- lib/ assets/ || true
           git checkout c5f9933 -- lib/ || true
-          git checkout HEAD -- assets/ || true
-          echo "=== CHECK IF RESTORED ==="
-          ls -la lib/
-          cat lib/main.dart | head -30
-          echo "=== FORCE DOWNGRADE AGP 9 -> 8.7.3 PARA GREEN ==="
-          rm -f android/settings.gradle
-          cat > android/gradle/wrapper/gradle-wrapper.properties <<'EOF'
-          distributionBase=GRADLE_USER_HOME
-          distributionPath=wrapper/dists
-          zipStoreBase=GRADLE_USER_HOME
-          zipStorePath=wrapper/dists
-          distributionUrl=https\://services.gradle.org/distributions/gradle-8.12-all.zip
-          networkTimeout=10000
-          validateDistributionUrl=true
-          EOF
-          cat > android/gradle.properties <<'EOF'
-          org.gradle.jvmargs=-Xmx4G
-          android.useAndroidX=true
-          android.enableJetifier=true
-          android.newDsl=false
-          EOF
-          cat > android/settings.gradle.kts <<'EOF'
-          pluginManagement {
-              val flutterSdkPath = {
-                  val properties = java.util.Properties()
-                  file("local.properties").inputStream().use { properties.load(it) }
-                  val flutterSdkPath = properties.getProperty("flutter.sdk")
-                  require(flutterSdkPath != null) { "flutter.sdk not set in local.properties or not set to a valid SDK path." }
-                  flutterSdkPath
-              }()
-              includeBuild("$flutterSdkPath/packages/flutter_tools/gradle")
-              repositories {
-                  google()
-                  mavenCentral()
-                  gradlePluginPortal()
-              }
-          }
-          plugins {
-              id("dev.flutter.flutter-plugin-loader") version "1.0.0"
-              id("com.android.application") version "8.7.3" apply false
-              id("org.jetbrains.kotlin.android") version "2.1.0" apply false
-          }
-          include(":app")
-          EOF
+          ls -lh assets/icon.png
+          cat lib/main.dart | head -10
+          echo "=== KEEP FRESH ANDROID FROM FLUTTER 3.32.8 (AGP 8.7.3) ==="
+          rm -rf android
+          flutter create --platforms=android --org com.gastosko.app --project-name budget_vs_gastosv1 .
+          git checkout main -- lib/ assets/ pubspec.yaml 2>/dev/null || git checkout HEAD -- lib/ assets/ || true
+          git checkout c5f9933 -- lib/ || true
           echo "=== SET APP NAME TO Gastos Ko ==="
           sed -i '' 's/android:label="[^"]*"/android:label="Gastos Ko"/' android/app/src/main/AndroidManifest.xml 2>/dev/null || sed -i 's/android:label="[^"]*"/android:label="Gastos Ko"/' android/app/src/main/AndroidManifest.xml
           grep label android/app/src/main/AndroidManifest.xml
-          echo "=== SET ICON FROM assets/icon.png ==="
+          echo "=== GENERATE ICON ==="
           cat > flutter_launcher_icons.yaml <<'EOF'
           flutter_icons:
             android: true
@@ -81,17 +33,12 @@ workflows:
           EOF
           flutter pub add flutter_launcher_icons --dev 2>/dev/null || true
           flutter pub get
-          dart run flutter_launcher_icons || flutter pub run flutter_launcher_icons || true
+          dart run flutter_launcher_icons || true
           ls android/app/src/main/res/mipmap-hdpi/ic_launcher.png && echo "ICON OK!"
-          echo "=== FINAL VERIFY ==="
-          cat android/gradle/wrapper/gradle-wrapper.properties | grep distributionUrl
-          cat android/settings.gradle.kts | grep com.android.application
-      - name: Get Flutter packages
+      - name: Build Protected APK
         script: |
           flutter clean
           flutter pub get
-      - name: Build Protected APK
-        script: |
           flutter build apk --release --obfuscate --split-debug-info=./symbols --no-tree-shake-icons
     artifacts:
       - build/app/outputs/flutter-apk/*.apk
