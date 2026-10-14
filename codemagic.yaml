@@ -1,6 +1,6 @@
 workflows:
   budget-vs-gastos-apk:
-    name: Budget vs Gastos APK
+    name: Gastos Ko APK
     instance_type: mac_mini_m1
     max_build_duration: 60
     environment:
@@ -8,27 +8,19 @@ workflows:
       xcode: latest
       cocoapods: default
     scripts:
-      - name: FIX - Regenerate Android and Restore Code
+      - name: Set App Name and Icon
         script: |
-          echo "=== BACKUP LIB CODE ==="
-          ls -la lib/
-          cat lib/main.dart | head -20
-          echo "=== DELETING OLD ANDROID ==="
-          rm -rf android
-          echo "=== GENERATING NEW ANDROID ==="
-          flutter create --platforms=android --org com.gastosko.app --project-name budget_vs_gastosv1 . 
-          echo "=== RESTORING YOUR BUDGET APP FROM GIT ==="
-          git checkout HEAD -- lib/ pubspec.yaml || git restore --source=HEAD lib/ pubspec.yaml || true
-          git checkout c5f9933 -- lib/ || true
-          echo "=== CHECK IF RESTORED ==="
-          ls -la lib/
-          cat lib/main.dart | head -30
-      - name: Get Flutter packages
-        script: |
-          flutter clean
+          sed -i 's/android:label="[^"]*"/android:label="Gastos Ko"/' android/app/src/main/AndroidManifest.xml || true
+          flutter pub add flutter_launcher_icons --dev || true
+          echo 'flutter_icons:
+            android: true
+            ios: false
+            image_path: "assets/icon.png"' > flutter_launcher_icons.yaml
           flutter pub get
-      - name: Build APK with Flutter
-        script: |
-          flutter build apk --release --no-tree-shake-icons
+          dart run flutter_launcher_icons || true
+      - name: Get Flutter packages
+        script: flutter pub get
+      - name: Build APK
+        script: flutter build apk --release --no-tree-shake-icons
     artifacts:
       - build/app/outputs/flutter-apk/*.apk
