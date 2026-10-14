@@ -11,15 +11,14 @@ workflows:
       - name: Restore App + Set Name + Icon
         script: |
           echo "=== RESTORE YOUR BUDGET CODE ==="
+          # Kunin lang latest main - WAG NA YUNG c5f9933 na luma!
           git checkout main -- lib/ assets/ pubspec.yaml 2>/dev/null || git checkout HEAD -- lib/ assets/ || true
-          git checkout c5f9933 -- lib/ || true
           ls -lh assets/icon.png
-          cat lib/main.dart | head -10
+          cat lib/main.dart | head -20
           echo "=== KEEP FRESH ANDROID FROM FLUTTER 3.32.8 (AGP 8.7.3) ==="
           rm -rf android
           flutter create --platforms=android --org com.gastosko.app --project-name budget_vs_gastosv1 .
           git checkout main -- lib/ assets/ pubspec.yaml 2>/dev/null || git checkout HEAD -- lib/ assets/ || true
-          git checkout c5f9933 -- lib/ || true
           echo "=== SET APP NAME TO Gastos Ko ==="
           sed -i '' 's/android:label="[^"]*"/android:label="Gastos Ko"/' android/app/src/main/AndroidManifest.xml 2>/dev/null || sed -i 's/android:label="[^"]*"/android:label="Gastos Ko"/' android/app/src/main/AndroidManifest.xml
           grep label android/app/src/main/AndroidManifest.xml
@@ -33,12 +32,12 @@ workflows:
           EOF
           flutter pub add flutter_launcher_icons --dev 2>/dev/null || true
           flutter pub get
-          dart run flutter_launcher_icons || true
-          ls android/app/src/main/res/mipmap-hdpi/ic_launcher.png && echo "ICON OK!"
+          dart run flutter_launcher_icons 2>/dev/null || true
+          echo "=== VERIFY TRIAL VERSION ==="
+          grep -n "isTrialVersion\|trialLimit" lib/main.dart
       - name: Build Protected APK
         script: |
-          flutter clean
           flutter pub get
-          flutter build apk --release --obfuscate --split-debug-info=./symbols --no-tree-shake-icons
+          flutter build apk --release
     artifacts:
-      - build/app/outputs/flutter-apk/*.apk
+      - build/app/outputs/flutter-apk/app-release.apk
