@@ -8,19 +8,42 @@ workflows:
       xcode: latest
       cocoapods: default
     scripts:
-      - name: Set App Name and Icon
+      - name: Set App Name and Icon + Fix AGP 9
         script: |
-          sed -i 's/android:label="[^"]*"/android:label="Gastos Ko"/' android/app/src/main/AndroidManifest.xml || true
-          flutter pub add flutter_launcher_icons --dev || true
-          echo 'flutter_icons:
+          echo "=== RESTORE YOUR BUDGET APP ==="
+          git checkout HEAD -- lib/ assets/ pubspec.yaml 2>/dev/null || git checkout main -- lib/ assets/ || true
+          echo "=== REGENERATE ANDROID IF NEEDED ==="
+          if [ ! -f "android/settings.gradle.kts" ]; then
+            rm -rf android
+            flutter create --platforms=android --org com.gastosko.app --project-name budget_vs_gastosv1 .
+            git checkout HEAD -- lib/ assets/ pubspec.yaml 2>/dev/null || true
+          fi
+          echo "=== FIX AGP 9 - OPT OUT OF NEW DSL ==="
+          echo "android.newDsl=false" >> android/gradle.properties
+          cat android/gradle.properties
+          echo "=== SET APP NAME TO GASTOS KO ==="
+          sed -i '' 's/android:label="[^"]*"/android:label="Gastos Ko"/' android/app/src/main/AndroidManifest.xml 2>/dev/null || sed -i 's/android:label="[^"]*"/android:label="Gastos Ko"/' android/app/src/main/AndroidManifest.xml
+          grep label android/app/src/main/AndroidManifest.xml
+          echo "=== SETUP ICON ==="
+          ls -lh assets/icon.png
+          flutter pub add flutter_launcher_icons --dev 2>/dev/null || true
+          cat > flutter_launcher_icons.yaml <<'EOF'
+          flutter_icons:
             android: true
             ios: false
-            image_path: "assets/icon.png"' > flutter_launcher_icons.yaml
+            image_path: "assets/icon.png"
+            min_sdk_android: 21
+          EOF
           flutter pub get
-          dart run flutter_launcher_icons || true
+          dart run flutter_launcher_icons 2>&1 | tail -20
+          echo "=== ICON CHECK ==="
+          ls android/app/src/main/res/mipmap-hdpi/ic_launcher.png && echo "ICON OK!"
       - name: Get Flutter packages
-        script: flutter pub get
-      - name: Build APK
-        script: flutter build apk --release --no-tree-shake-icons
+        script: |
+          flutter clean
+          flutter pub get
+      - name: Build APK with Protection
+        script: |
+          flutter build apk --release --obfuscate --split-debug-info=./symbols --no-tree-shake-icons
     artifacts:
       - build/app/outputs/flutter-apk/*.apk
