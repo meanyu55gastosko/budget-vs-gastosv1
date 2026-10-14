@@ -1,5 +1,5 @@
 workflows:
-  budget-vs-gastos-apk:
+  budget-vs-gastosv1:
     name: Budget vs Gastos APK
     instance_type: mac_mini_m1
     max_build_duration: 60
@@ -8,17 +8,20 @@ workflows:
       xcode: latest
       cocoapods: default
     scripts:
-      - name: FIX AGP 9 - Downgrade to 8.7.3
+      - name: FIX AGP 9 - Regenerate Android
         script: |
-          rm -rf ~/.gradle/wrapper/dists/
-          mkdir -p android/gradle/wrapper
-          printf "distributionBase=GRADLE_USER_HOME\ndistributionPath=wrapper/dists\nzipStoreBase=GRADLE_USER_HOME\nzipStorePath=wrapper/dists\ndistributionUrl=https\\\\://services.gradle.org/distributions/gradle-8.12-all.zip\nnetworkTimeout=10000\nvalidateDistributionUrl=true\n" > android/gradle/wrapper/gradle-wrapper.properties
-          printf "org.gradle.jvmargs=-Xmx4G\nandroid.useAndroidX=true\nandroid.enableJetifier=true\nandroid.newDsl=false\n" > android/gradle.properties
-          printf "pluginManagement {\n val flutterSdkPath = {\n val properties = java.util.Properties()\n file(\"local.properties\").inputStream().use { properties.load(it) }\n val flutterSdkPath = properties.getProperty(\"flutter.sdk\")\n require(flutterSdkPath != null) { \"flutter.sdk not set\" }\n flutterSdkPath\n }()\n includeBuild(\"\$flutterSdkPath/packages/flutter_tools/gradle\")\n repositories {\n google()\n mavenCentral()\n gradlePluginPortal()\n }\n}\nplugins {\n id(\"dev.flutter.flutter-plugin-loader\") version \"1.0.0\"\n id(\"com.android.application\") version \"8.7.3\" apply false\n id(\"org.jetbrains.kotlin.android\") version \"2.1.0\" apply false\n}\ninclude(\":app\")\n" > android/settings.gradle.kts
-          echo "FIX APPLIED - Checking files:"
+          echo "=== BEFORE ==="
+          ls -la android/
+          cat android/settings.gradle.kts || cat android/settings.gradle || echo "no settings file"
+          cat android/gradle/wrapper/gradle-wrapper.properties
+          echo "=== DELETING OLD ANDROID ==="
+          rm -rf android
+          echo "=== REGENERATING ANDROID WITH FLUTTER CREATE ==="
+          flutter create --platforms=android --org com.gastosko.app --project-name budget_vs_gastosv1 . --overwrite
+          echo "=== AFTER REGENERATE ==="
+          cat android/settings.gradle.kts
           cat android/gradle/wrapper/gradle-wrapper.properties
           cat android/gradle.properties
-          cat android/settings.gradle.kts
       - name: Get Flutter packages
         script: |
           flutter clean
