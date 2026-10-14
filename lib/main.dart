@@ -86,29 +86,11 @@ class _SplashState extends State<SplashScreen>
               child: Container(
                 width: 130,
                 height: 130,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  // PLAIN GOLD GLOW LANG - WALANG DARK BORDER!
-                  boxShadow: [
-                    BoxShadow(
-                        color: const Color(0xFFFFD700).withValues(alpha: 0.8),
-                        blurRadius: _glow.value,
-                        spreadRadius: 5)
-                  ],
-                ),
-                child: ClipOval(
-                  child: Image.asset(
-                    'assets/icon.png',
-                    width: 130, height: 130,
-                    fit: BoxFit.cover,
-                    // Kung di pa gold yung asset, gagawing gold pa rin - pero pag gold na asset mo, plain lang!
-                    errorBuilder: (c, e, s) => Container(
-                      decoration: const BoxDecoration(
-                          color: Color(0xFFFFD700), shape: BoxShape.circle),
-                      child: const Icon(Icons.account_balance_wallet,
-                          size: 70, color: Color(0xFF121212)),
-                    ),
-                  ),
+                child: Image.asset(
+                  'assets/icon.png',
+                  width: 130,
+                  height: 130,
+                  fit: BoxFit.contain,
                 ),
               ),
             ),
@@ -365,7 +347,7 @@ class _HomeState extends State<HomeScreen> {
               actions: [
                 TextButton(
                     onPressed: () => Navigator.pop(context),
-                    child: const Text('Cancel',
+                    child: const Text('I-kansela',
                         style: TextStyle(color: Colors.white54))),
                 ElevatedButton(
                     style: ElevatedButton.styleFrom(
@@ -384,7 +366,7 @@ class _HomeState extends State<HomeScreen> {
                       });
                       Navigator.pop(context);
                     },
-                    child: Text(isAddMode ? 'DAGDAG NA!' : 'SAVE',
+                    child: Text(isAddMode ? 'Idagdag' : 'I-Save',
                         style: const TextStyle(
                             color: Colors.black, fontWeight: FontWeight.bold)))
               ],
@@ -434,13 +416,13 @@ class _HomeState extends State<HomeScreen> {
                               initialDate: dSel);
                           if (d != null) setM(() => dSel = d);
                         },
-                        child: const Text('Pili Date',
+                        child: const Text('Pumili ng Petsa',
                             style: TextStyle(color: Color(0xFFFFD700))))
                   ]),
                   actions: [
                     TextButton(
                         onPressed: () => Navigator.pop(context),
-                        child: const Text('Cancel')),
+                        child: const Text('I-kansela')),
                     ElevatedButton(
                         style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFFFFD700)),
@@ -473,7 +455,7 @@ class _HomeState extends State<HomeScreen> {
                           Future.delayed(const Duration(milliseconds: 300),
                               () => checkOverBudget());
                         },
-                        child: const Text('SAVE',
+                        child: const Text('I-Save',
                             style: TextStyle(
                                 color: Colors.black,
                                 fontWeight: FontWeight.bold)))
@@ -513,7 +495,7 @@ class _HomeState extends State<HomeScreen> {
                   child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                    const Text('Budget',
+                    const Text('Total na Budget',
                         style: TextStyle(color: Colors.white54, fontSize: 10)),
                     Text(peso(budget),
                         style: const TextStyle(
@@ -521,7 +503,7 @@ class _HomeState extends State<HomeScreen> {
                   ])),
               Expanded(
                   child: Column(children: [
-                const Text('Gastos',
+                const Text('Total na Gastos',
                     style: TextStyle(color: Colors.white54, fontSize: 10)),
                 Text(peso(totAll),
                     style: const TextStyle(
@@ -536,7 +518,7 @@ class _HomeState extends State<HomeScreen> {
                               : const Color(0xFFFFD700).withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(8)),
                       child: Column(children: [
-                        const Text('Remaining',
+                        const Text('Natitira',
                             style:
                                 TextStyle(color: Colors.white54, fontSize: 10)),
                         Text(peso(rem),
@@ -575,7 +557,7 @@ class _HomeState extends State<HomeScreen> {
                   Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('HISTORY REPORT',
+                        const Text('HISTORY REPORT (Date Range)',
                             style: TextStyle(
                                 color: Color(0xFFFFD700),
                                 fontWeight: FontWeight.bold,
@@ -596,7 +578,7 @@ class _HomeState extends State<HomeScreen> {
                   color: const Color(0xFF1E1E1E),
                   borderRadius: BorderRadius.circular(16)),
               child: Column(children: [
-                const Text('PIE CHART - ASTIG DONUT',
+                const Text('',
                     style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
@@ -705,10 +687,10 @@ class _HomeState extends State<HomeScreen> {
           const Center(
               child: Padding(
                   padding: EdgeInsets.all(30),
-                  child: Text('Wala pang gastos!',
+                  child: Text('Wala pang ginastos!',
                       style: TextStyle(color: Colors.white54)))),
         const SizedBox(height: 14),
-        const Text('Recent Entries:',
+        const Text('Mga Pinaggastusan:',
             style: TextStyle(color: Colors.white38, fontSize: 11)),
         const SizedBox(height: 6),
         for (var e in filtered.reversed)
